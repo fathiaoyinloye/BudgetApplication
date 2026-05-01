@@ -1,0 +1,22 @@
+body, html, #root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.logo {
+  font-size: 26px;
+  font-weight: 700;
+}
+
+.card h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.card p {
+  font-size: 16px;
+  font-weight: 400;
+  color: #eee;
+}
