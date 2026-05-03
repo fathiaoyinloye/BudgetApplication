@@ -2,19 +2,19 @@ package budgeting_application.services.implementations;
 
 import budgeting_application.data.models.Budget;
 import budgeting_application.data.models.BudgetItem;
+import budgeting_application.data.models.User;
 import budgeting_application.data.repositories.BudgetItemRepository;
 import budgeting_application.data.repositories.BudgetRepository;
 import budgeting_application.dtos.requests.AddItemRequest;
+import budgeting_application.dtos.requests.EditItemRequest;
 import budgeting_application.dtos.responses.BudgetItemResponse;
 import budgeting_application.exceptions.BudgetException;
-import budgeting_application.mappers.Mappers;
 import budgeting_application.services.interfaces.BudgetItemService;
+import budgeting_application.services.security.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -29,6 +29,7 @@ public class BudgetItemServiceImpl implements BudgetItemService {
     private final BudgetItemRepository budgetItemRepository;
     private final BudgetRepository budgetRepository;
     private final ModelMapper modelMapper;
+    private final SecurityService securityService;
 
 
     @Override
@@ -40,7 +41,7 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                     BudgetItem item = modelMapper.map(request, BudgetItem.class);
                     item.setActualAmount(BigDecimal.ZERO);
                     item.setBudget(budget);
-                    budget.setAmount(budget.getAmount().add(item.getBudgetedAmount()));
+                    budget.setBudgetedAmount(budget.getBudgetedAmount().add(item.getBudgetedAmount()));
                     return item;
                 })
                 .collect(Collectors.toList());
@@ -51,23 +52,47 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                 .collect(Collectors.toList());
     }
 
+
+
     @Override
-    public BudgetItemResponse addItem(Budget budget,AddItemRequest request) {
-//        Mappers.mapAddBudgetItem(request, budget, budgetItemRepository);
-        return null;
+    public void deleteItem(UUID itemId, UUID budgetId) {
+        User user = securityService.getAuthenticatedUser();
+        BudgetItem item = findItem(itemId, budgetId, user);
+        Budget budget = findBudget(budgetId);
+        budget.setBudgetedAmount(budget.getBudgetedAmount().subtract(item.getBudgetedAmount()));
+        budgetItemRepository.delete(item);
+
+
 
     }
 
     @Override
-    public void deleteItem() {
+    @Transactional
+    public BudgetItemResponse editItem(UUID budgetId, UUID itemId, EditItemRequest request) {
+        User user = securityService.getAuthenticatedUser();
+        BudgetItem item = findItem(itemId, budgetId, user);
+        Budget budget = findBudget(budgetId);
 
+        if (request.getName() != null && !request.getName().isBlank()) {
+            item.setName(request.getName());
+        }
+        if (request.getBudgetedAmount() != null) {
+            BigDecimal difference = request.getBudgetedAmount().subtract(item.getBudgetedAmount());
+            item.setBudgetedAmount(request.getBudgetedAmount());
+            budget.setBudgetedAmount(budget.getBudgetedAmount().add(difference));
+        }
+
+        if (request.getActualAmount() != null) {
+            BigDecimal difference = request.getActualAmount().subtract(item.getActualAmount());
+            item.setActualAmount(request.getActualAmount());
+            budget.setActualAmount(budget.getActualAmount().add(difference));
+        }
+        if (request.getBudgetItemType() != null) {
+            item.setBudgetItemType(request.getBudgetItemType());
+        }
+        BudgetItem savedItem = budgetItemRepository.save(item);
+        return modelMapper.map(savedItem, BudgetItemResponse.class);
     }
-
-    @Override
-    public void editItem() {
-
-    }
-
 
 
     @Override
@@ -82,8 +107,12 @@ public class BudgetItemServiceImpl implements BudgetItemService {
                 .orElseThrow(()-> new BudgetException("Budget Does Not Exist"));
     }
 
+    private BudgetItem findItem(UUID itemId, UUID budgetId, User user) {
+        return budgetItemRepository.findItemSecurely(itemId, budgetId, user).orElseThrow(() -> new BudgetException("Item Does Not Exist"));
+    }
 
-    private List<BudgetItemResponse> getAllBudgetItems(UUID id){
+
+        private List<BudgetItemResponse> getAllBudgetItems(UUID id){
         var savedItems = budgetItemRepository.findAllByBudget(findBudget(id));
         return savedItems.stream()
                 .map(item -> modelMapper.map(item, BudgetItemResponse.class))

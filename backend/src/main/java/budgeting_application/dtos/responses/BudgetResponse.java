@@ -1,5 +1,6 @@
 package budgeting_application.dtos.responses;
 
+import jakarta.persistence.Column;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,7 +15,8 @@ public class BudgetResponse {
     private String name;
     private String period;
     private String message;
-    private BigDecimal amount;
+    private BigDecimal budgetedAmount;
+    private BigDecimal actualAmount;
     private LocalDateTime createdAt;
 
 

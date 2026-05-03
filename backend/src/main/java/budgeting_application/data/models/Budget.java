@@ -25,11 +25,15 @@ public class Budget {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "name", updatable = false, nullable = false)
+    @Column(name = "name",  nullable = false)
     private String name;
 
     @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    private BigDecimal budgetedAmount;
+
+
+    @Column( precision = 19, scale = 2)
+    private BigDecimal actualAmount;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "period", nullable = false)

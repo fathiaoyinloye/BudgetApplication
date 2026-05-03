@@ -5,17 +5,15 @@ import budgeting_application.data.models.User;
 import budgeting_application.data.repositories.BudgetItemRepository;
 import budgeting_application.data.repositories.BudgetRepository;
 import budgeting_application.data.repositories.UserRepository;
-import budgeting_application.dtos.requests.AddItemRequest;
 import budgeting_application.dtos.requests.EditBudgetRequest;
 import budgeting_application.dtos.responses.BudgetResponse;
 import budgeting_application.exceptions.BudgetDoesNotExistException;
-import budgeting_application.exceptions.UserDoesNotExistException;
-import budgeting_application.services.interfaces.BudgetItemService;
 import budgeting_application.services.interfaces.BudgetService;
+import budgeting_application.services.security.SecurityService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import  java.util.List;
@@ -33,32 +31,27 @@ public class BudgetServiceImpl implements BudgetService {
     private final BudgetItemRepository budgetItemRepository;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
+    private final SecurityService securityService;
 
 
     @Override
     public BudgetResponse createBudget() {
-        User user = getUser();
+        User user = securityService.getAuthenticatedUser();
         Budget budget = new Budget();
         budget.setUser(user);
         budget.setName("untitled");
         budget.setPeriod(NONE);
-        budget.setAmount(BigDecimal.ZERO);
+        budget.setBudgetedAmount(BigDecimal.ZERO);
+        budget.setActualAmount(BigDecimal.ZERO);
         Budget savedBudget = budgetRepository.save(budget);
-        BudgetResponse budgetResponse = new BudgetResponse();
-        budgetResponse.setBudgetID(savedBudget.getId());
-        budgetResponse.setName(savedBudget.getName());
-        budgetResponse.setAmount(savedBudget.getAmount());
-        budgetResponse.setCreatedAt(savedBudget.getCreatedAt());
-        budgetResponse.setPeriod(savedBudget.getPeriod().toString());
-        budgetResponse.setMessage("Budget Created Successfully");
-        return budgetResponse;
+        return modelMapper.map(savedBudget, BudgetResponse.class);
     }
 
 
 
     @Override
     public List<BudgetResponse> getAllBudgets() {
-        User user = getUser();
+        User user = securityService.getAuthenticatedUser();
         List<Budget> budgets = budgetRepository.findAllByUser(user);
         return budgets.stream()
                 .map(budget -> modelMapper.map(budget, BudgetResponse.class))
@@ -68,7 +61,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public BudgetResponse editBudget(UUID id,EditBudgetRequest editBudgetRequest) {
-        User user = getUser();
+        User user = securityService.getAuthenticatedUser();
         Budget budget = findBudget(id, user);
         if(!editBudgetRequest.getName().isBlank()) budget.setName(editBudgetRequest.getName());
         if(editBudgetRequest.getPeriod() != null) budget.setPeriod(editBudgetRequest.getPeriod());
@@ -78,13 +71,16 @@ public class BudgetServiceImpl implements BudgetService {
 
     @Override
     public BudgetResponse getBudget(UUID id) {
-        Budget budget = findBudget(id, getUser());
+        User user = securityService.getAuthenticatedUser();
+        Budget budget = findBudget(id, user);
         return modelMapper.map(budget, BudgetResponse.class);
     }
 
     @Override
+    @Transactional
     public void deleteBudget(UUID id) {
-        Budget budget = findBudget(id, getUser());
+        User user = securityService.getAuthenticatedUser();
+        Budget budget = findBudget(id, user);
         budgetItemRepository.deleteByBudget(budget);
         budgetRepository.delete(budget);
     }
@@ -100,11 +96,6 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
 
-    private User getUser( ) {
-        String username = SecurityContextHolder.getContext().getAuthentication().getName();
-        return userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserDoesNotExistException("User not found"));
 
-    }
 }
 

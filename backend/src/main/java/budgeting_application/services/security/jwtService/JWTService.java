@@ -1,4 +1,4 @@
-package budgeting_application.services.jwtService;
+package budgeting_application.services.security.jwtService;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;

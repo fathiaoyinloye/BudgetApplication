@@ -14,7 +14,7 @@ import budgeting_application.exceptions.BudgetException;
 import budgeting_application.exceptions.UserDoesNotExistException;
 import budgeting_application.mappers.Mappers;
 import budgeting_application.services.interfaces.UserService;
-import budgeting_application.services.jwtService.JWTService;
+import budgeting_application.services.security.jwtService.JWTService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;

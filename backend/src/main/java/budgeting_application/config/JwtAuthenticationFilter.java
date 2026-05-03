@@ -1,6 +1,6 @@
 package budgeting_application.config;
 
-import budgeting_application.services.jwtService.JWTService;
+import budgeting_application.services.security.jwtService.JWTService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

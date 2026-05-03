@@ -1,22 +1,16 @@
-package budgeting_application.dtos.responses;
+package budgeting_application.dtos.requests;
 
 import budgeting_application.data.models.BudgetItemType;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
-import java.util.UUID;
 
 @Getter
 @Setter
-public class BudgetItemResponse {
+public class EditItemRequest {
     private String name;
     private BigDecimal budgetedAmount;
     private BigDecimal actualAmount;
     private BudgetItemType budgetItemType;
-    private UUID id;
-
-
-
-
 }

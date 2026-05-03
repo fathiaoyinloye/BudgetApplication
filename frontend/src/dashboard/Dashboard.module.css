@@ -64,11 +64,7 @@
   text-align: left;
 }
 
-.navItem:hover {
-  background-color: rgba(216, 180, 254, 0.1);
-  color: #ffffff;
-}
-
+.navItem:hover { background-color: rgba(216, 180, 254, 0.1); color: #ffffff; }
 .icon { margin-right: 12px; font-size: 1.2rem; }
 
 .sidebarFooter {
@@ -77,10 +73,7 @@
 }
 
 .logoutItem { color: #f87171; }
-.logoutItem:hover {
-  background-color: rgba(248, 113, 113, 0.1);
-  color: #fca5a5;
-}
+.logoutItem:hover { background-color: rgba(248, 113, 113, 0.1); color: #fca5a5; }
 
 .mainArea {
   flex: 1;
@@ -103,17 +96,8 @@
   flex-shrink: 0;
 }
 
-.navLeft {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-
-.navRight {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+.navLeft  { display: flex; align-items: center; gap: 14px; }
+.navRight { display: flex; align-items: center; gap: 12px; }
 
 .iconButton {
   background: transparent;
@@ -129,18 +113,9 @@
   transition: all 0.2s;
 }
 
-.iconButton:hover {
-  background-color: rgba(216, 180, 254, 0.1);
-  color: #ffffff;
-}
+.iconButton:hover { background-color: rgba(216, 180, 254, 0.1); color: #ffffff; }
 
-.pageTitle {
-  margin: 0;
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #ffffff;
-  cursor: default;
-}
+.pageTitle { margin: 0; font-size: 1.5rem; font-weight: 600; color: #ffffff; }
 
 .budgetNameEditable {
   font-weight: 700;
@@ -150,10 +125,7 @@
   transition: border-color 0.2s;
   padding-bottom: 1px;
 }
-
-.budgetNameEditable:hover {
-  border-bottom: 1px dashed rgba(216, 180, 254, 0.5);
-}
+.budgetNameEditable:hover { border-bottom: 1px dashed rgba(216, 180, 254, 0.5); }
 
 .budgetNameInput {
   background: transparent;
@@ -169,17 +141,8 @@
   caret-color: #a855f7;
 }
 
-.periodWrapper {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.periodLabel {
-  font-size: 0.85rem;
-  color: #a78bfa;
-  white-space: nowrap;
-}
+.periodWrapper { display: flex; align-items: center; gap: 8px; }
+.periodLabel   { font-size: 0.85rem; color: #a78bfa; white-space: nowrap; }
 
 .periodSelect {
   background: rgba(255, 255, 255, 0.04);
@@ -197,7 +160,6 @@
   background-repeat: no-repeat;
   background-position: right 12px center;
 }
-
 .periodSelect:focus { border-color: rgba(216, 180, 254, 0.5); }
 .periodSelect option { background: #1a0533; color: #e9d5ff; }
 
@@ -217,19 +179,11 @@
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-
-.primaryButton:hover {
-  background-color: #a855f7;
-  transform: translateY(-1px);
-}
-
+.primaryButton:hover    { background-color: #a855f7; transform: translateY(-1px); }
+.primaryButton:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 .btnIcon { font-size: 1rem; }
 
-.contentScrollArea {
-  flex: 1;
-  overflow-y: auto;
-  padding: 32px;
-}
+.contentScrollArea { flex: 1; overflow-y: auto; padding: 32px; }
 
 .summaryCard {
   background: rgba(255, 255, 255, 0.02);
@@ -240,51 +194,81 @@
   margin-bottom: 24px;
 }
 
-.summaryLabel {
-  margin: 0 0 8px 0;
-  color: #c4b5fd;
-  font-weight: 500;
+.summaryLabel  { margin: 0 0 8px 0; color: #c4b5fd; font-weight: 500; font-size: 0.9rem; }
+.summaryAmount { margin: 0; font-size: 2.8rem; font-weight: 700; color: #ffffff; letter-spacing: -1px; }
+
+.sectionHeading { margin: 0 0 20px 0; color: #e9d5ff; font-size: 1.1rem; font-weight: 500; }
+
+/* ── ERROR BANNER (page-level) ── */
+.errorBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #fca5a5;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
   font-size: 0.9rem;
 }
 
-.summaryAmount {
-  margin: 0;
-  font-size: 2.8rem;
-  font-weight: 700;
-  color: #ffffff;
-  letter-spacing: -1px;
+.errorClose {
+  background: transparent;
+  border: none;
+  color: #f87171;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0 4px;
+  line-height: 1;
 }
 
-.currencySymbol { color: #34d399; margin-right: 4px; }
-
-.sectionHeading {
-  margin: 0 0 24px 0;
-  color: #e9d5ff;
-  font-size: 1.1rem;
-  font-weight: 500;
+/* ── INLINE ERROR (below edit/delete row) ── */
+.inlineError {
+  background: rgba(248, 113, 113, 0.08);
+  border-left: 3px solid #f87171;
+  color: #fca5a5;
+  font-size: 0.82rem;
+  padding: 8px 16px;
 }
 
+/* ── BUDGET GRID ── */
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
 }
 
+/* ── BUDGET CARD ── */
 .budgetCard {
   position: relative;
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(216, 180, 254, 0.08);
-  padding: 24px;
+  padding: 24px 22px 18px;
   border-radius: 16px;
-  transition: all 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.25s ease;
   overflow: hidden;
 }
 
 .budgetCard:hover {
-  background: rgba(255, 255, 255, 0.04);
-  transform: translateY(-2px);
-  border-color: rgba(216, 180, 254, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+  transform: translateY(-3px);
+  border-color: rgba(168, 85, 247, 0.35);
+  box-shadow: 0 8px 30px rgba(147, 51, 234, 0.2);
 }
+
+/* When confirm is open, card expands and stops being clickable */
+.budgetCardExpanded {
+  cursor: default;
+  border-color: rgba(248, 113, 113, 0.3);
+  background: rgba(248, 113, 113, 0.04);
+  transform: none;
+}
+
+.budgetCard:hover .deleteCardBtn { opacity: 1; }
 
 .cardAccent {
   position: absolute;
@@ -292,43 +276,113 @@
   width: 100%;
   height: 3px;
   background: linear-gradient(to right, #a855f7, #ec4899);
-  opacity: 0.8;
 }
 
-.cardHeader {
+.deleteCardBtn {
+  position: absolute;
+  top: 12px; right: 12px;
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border-radius: 8px;
+  width: 30px; height: 30px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-bottom: 16px;
-}
-
-.budgetName {
-  margin: 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: #ffffff;
-}
-
-.cardIcon {
-  background: rgba(216, 180, 254, 0.1);
-  padding: 8px;
-  border-radius: 10px;
-  font-size: 1.1rem;
-}
-
-.cardLabel {
-  margin: 0 0 4px 0;
+  align-items: center;
+  justify-content: center;
   font-size: 0.85rem;
-  color: #a78bfa;
+  cursor: pointer;
+  opacity: 0;
+  transition: all 0.2s ease;
+  z-index: 2;
+}
+.deleteCardBtn:hover { background: rgba(248, 113, 113, 0.25); border-color: rgba(248, 113, 113, 0.5); transform: scale(1.1); }
+
+.budgetCardName {
+  margin: 10px 0 16px 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 0.01em;
+  line-height: 1.3;
+  padding-right: 28px;
 }
 
-.cardAmount {
+.budgetCardBalanceLabel {
+  margin: 0 0 4px 0;
+  font-size: 0.72rem;
+  color: #a78bfa;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.budgetCardBalance {
   margin: 0;
-  font-size: 1.75rem;
+  font-size: 1.5rem;
   font-weight: 700;
   color: #34d399;
+  letter-spacing: -0.5px;
+  flex: 1;
 }
 
+.budgetCardDate {
+  margin: 14px 0 0 0;
+  font-size: 0.68rem;
+  color: #6b5a8a;
+  letter-spacing: 0.02em;
+}
+
+/* ── CARD INLINE CONFIRM (expands inside card) ── */
+.cardConfirm {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.cardConfirmText {
+  margin: 0 0 6px 0;
+  font-size: 0.88rem;
+  color: #fca5a5;
+  line-height: 1.5;
+}
+
+.cardConfirmText span { color: #f87171; font-size: 0.78rem; }
+
+.cardConfirmError {
+  margin: 0 0 8px 0;
+  font-size: 0.78rem;
+  color: #f87171;
+}
+
+.cardConfirmActions { display: flex; gap: 8px; margin-top: 10px; }
+
+/* ── SHARED CONFIRM BUTTONS ── */
+.confirmYesBtn {
+  background: rgba(248, 113, 113, 0.18);
+  border: 1px solid rgba(248, 113, 113, 0.4);
+  color: #f87171;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.confirmYesBtn:hover { background: rgba(248, 113, 113, 0.3); }
+
+.confirmNoBtn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(216, 180, 254, 0.15);
+  color: #c4b5fd;
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.confirmNoBtn:hover { background: rgba(255, 255, 255, 0.08); }
+
+/* ── BALANCE GRID ── */
 .balanceGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -336,6 +390,7 @@
   margin-bottom: 30px;
 }
 
+/* ── BUDGET TABLE ── */
 .budgetTable {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(216, 180, 254, 0.08);
@@ -346,7 +401,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 80px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
   padding: 12px 20px;
   background: rgba(255, 255, 255, 0.03);
   border-bottom: 1px solid rgba(216, 180, 254, 0.1);
@@ -358,45 +413,150 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 80px;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
   padding: 14px 20px;
   border-bottom: 1px solid rgba(216, 180, 254, 0.05);
   align-items: center;
   transition: background 0.15s;
 }
-
 .tableRow:last-child { border-bottom: none; }
 .tableRow:hover { background: rgba(255, 255, 255, 0.02); }
 
 .itemName { font-weight: 500; color: #ffffff; }
 
+.typeBadge {
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 8px;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
+}
+.income  { background: rgba(52, 211, 153, 0.12); color: #34d399; }
+.expense { background: rgba(248, 113, 113, 0.12); color: #f87171; }
+
+.rowActions { display: flex; gap: 6px; align-items: center; }
+
 .editRowBtn {
-  background: #9333ea;
-  border: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  color: white;
+  background: rgba(168, 85, 247, 0.12);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  color: #a855f7;
+  border-radius: 7px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
   font-size: 0.8rem;
   cursor: pointer;
-  transition: background 0.15s;
+  transition: all 0.15s;
+}
+.editRowBtn:hover { background: rgba(168, 85, 247, 0.25); border-color: rgba(168, 85, 247, 0.5); }
+
+.deleteRowBtn {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border-radius: 7px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.deleteRowBtn:hover { background: rgba(248, 113, 113, 0.22); border-color: rgba(248, 113, 113, 0.5); }
+
+/* ── INLINE EDIT ROW ── */
+.editRow {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 100px;
+  padding: 10px 20px;
+  border-bottom: 1px solid rgba(216, 180, 254, 0.05);
+  align-items: center;
+  gap: 8px;
+  background: rgba(168, 85, 247, 0.04);
 }
 
-.editRowBtn:hover { background: #a855f7; }
+.editRowInput {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(216, 180, 254, 0.25);
+  border-radius: 8px;
+  color: #e9d5ff;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  font-family: inherit;
+  transition: border-color 0.2s;
+}
+.editRowInput:focus { border-color: rgba(168, 85, 247, 0.6); }
 
-.danger { color: #f87171; font-weight: 600; }
+.editRowSelect {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(216, 180, 254, 0.25);
+  border-radius: 8px;
+  color: #e9d5ff;
+  font-size: 0.85rem;
+  padding: 6px 10px;
+  outline: none;
+  width: 100%;
+  cursor: pointer;
+}
+.editRowSelect option { background: #1a0533; }
 
-.emptyMsg {
-  padding: 24px 20px;
-  color: #555;
+.editRowActions { display: flex; gap: 6px; align-items: center; }
+
+.saveRowBtn {
+  background: rgba(52, 211, 153, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  color: #34d399;
+  border-radius: 7px;
+  width: 30px; height: 30px;
+  font-size: 1rem; font-weight: 700;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.saveRowBtn:hover { background: rgba(52, 211, 153, 0.28); }
+
+.cancelRowBtn {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  border-radius: 7px;
+  width: 30px; height: 30px;
   font-size: 0.9rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.cancelRowBtn:hover { background: rgba(248, 113, 113, 0.22); }
+
+/* ── INLINE DELETE CONFIRM ROW ── */
+.confirmRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: rgba(248, 113, 113, 0.05);
+  border-bottom: 1px solid rgba(248, 113, 113, 0.1);
+  gap: 16px;
 }
 
-.addForm {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-top: 8px;
+.confirmText {
+  font-size: 0.88rem;
+  color: #fca5a5;
 }
+
+.confirmText strong { color: #ffffff; }
+
+.confirmActions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── MISC ── */
+.danger   { color: #f87171; font-weight: 600; }
+.emptyMsg { padding: 24px 20px; color: #555; font-size: 0.9rem; }
+.loadingMsg { padding: 40px; text-align: center; color: #888; font-size: 0.95rem; }
+
+/* ── ADD ITEM FORM ── */
+.addForm { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 8px; }
 
 .addForm input,
 .addForm select {
@@ -411,12 +571,9 @@
   outline: none;
   transition: border-color 0.2s;
 }
-
 .addForm input::placeholder { color: #555; }
-
 .addForm input:focus,
 .addForm select:focus { border-color: rgba(216, 180, 254, 0.4); }
-
 .addForm select option { background: #1a0533; }
 
 .addForm button {
@@ -431,19 +588,8 @@
   white-space: nowrap;
   transition: background 0.15s;
 }
-
 .addForm button:hover { background: #a855f7; }
 
-
-
-.greetingText {
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 10px;
-}
-
-.subGreeting {
-  font-size: 1rem;
-  color: #c4b5fd;
-}
+/* ── GREETING ── */
+.greetingText { font-size: 2rem; font-weight: 700; color: #ffffff; margin: 0 0 10px 0; }
+.subGreeting  { font-size: 1rem; color: #c4b5fd; margin: 0; }

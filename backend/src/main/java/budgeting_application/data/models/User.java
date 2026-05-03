@@ -20,10 +20,10 @@ public class User implements UserDetails {
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String email;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username;
 
 

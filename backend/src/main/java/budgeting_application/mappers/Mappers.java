@@ -1,18 +1,10 @@
 package budgeting_application.mappers;
 
 import budgeting_application.config.ApplicationConfig;
-import budgeting_application.data.models.Budget;
-import budgeting_application.data.models.BudgetItem;
 import budgeting_application.data.models.User;
-import budgeting_application.data.repositories.BudgetItemRepository;
-import budgeting_application.dtos.requests.AddItemRequest;
 import budgeting_application.dtos.requests.SignUpRequest;
-import budgeting_application.dtos.responses.BudgetItemResponse;
 import budgeting_application.dtos.responses.SignUpResponse;
-import budgeting_application.services.jwtService.JWTService;
-
-import java.util.ArrayList;
-import java.util.List;
+import budgeting_application.services.security.jwtService.JWTService;
 
 public class Mappers {
     public  static User mapSignUpRequest(SignUpRequest signUpRequest, ApplicationConfig applicationConfig){
