@@ -1,0 +1,19 @@
+# Ignore build outputs (The biggest space savers)
+target/
+*.jar
+*.class
+
+# Ignore IDE and OS metadata
+.idea/
+.vscode/
+*.iml
+.DS_Store
+
+# Ignore Maven wrapper if you aren't using it in Docker
+.mvn/
+mvnw
+mvnw.cmd
+
+# Ignore Docker files themselves
+Dockerfile
+.dockerignore
