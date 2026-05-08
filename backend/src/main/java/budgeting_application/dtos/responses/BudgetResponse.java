@@ -14,7 +14,6 @@ public class BudgetResponse {
     private UUID budgetID;
     private String name;
     private String period;
-    private String message;
     private BigDecimal budgetedAmount;
     private BigDecimal actualAmount;
     private LocalDateTime createdAt;

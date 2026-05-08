@@ -8,9 +8,12 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.UUID;
 
-@Entity
 @Getter
 @Setter
+@Entity
+@Table(name = "budget_items", indexes = {
+        @Index(name = "idx_budget_id", columnList = "budget_id")
+})
 public class BudgetItem {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)

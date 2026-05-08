@@ -28,13 +28,6 @@ public class Budget {
     @Column(name = "name",  nullable = false)
     private String name;
 
-    @Column(nullable = false, precision = 19, scale = 2)
-    private BigDecimal budgetedAmount;
-
-
-    @Column( precision = 19, scale = 2)
-    private BigDecimal actualAmount;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "period", nullable = false)
     private BudgetPeriod period;

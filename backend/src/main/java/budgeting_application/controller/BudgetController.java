@@ -1,8 +1,9 @@
 package budgeting_application.controller;
 
+import budgeting_application.dtos.requests.CreateBudgetRequest;
 import budgeting_application.dtos.requests.EditBudgetRequest;
 import budgeting_application.services.interfaces.BudgetService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,8 +22,8 @@ public class BudgetController {
 
 
     @PostMapping("/budget")
-    public ResponseEntity<?> createBudget() {
-        return ResponseEntity.status(CREATED).body(budgetService.createBudget());
+    public ResponseEntity<?> createBudget(@Valid @RequestBody CreateBudgetRequest request) {
+        return ResponseEntity.status(CREATED).body(budgetService.createBudget(request));
     }
 
 
@@ -33,7 +34,7 @@ public class BudgetController {
 
     @PutMapping("/{budgetId}")
     public ResponseEntity<?> editBudget(@PathVariable UUID budgetId, @RequestBody EditBudgetRequest request) {
-        return ResponseEntity.status(OK).body(budgetService.editBudget(budgetId , request));
+        return ResponseEntity.status(OK).body(budgetService.editBudget(budgetId, request));
     }
 
 
@@ -48,4 +49,9 @@ public class BudgetController {
         return ResponseEntity.noContent().build();
     }
 
+    @GetMapping("/{budgetId}/report")
+    public ResponseEntity<?> getBudgetReport(@PathVariable UUID budgetId) {
+        return ResponseEntity.status(OK).body(budgetService.getBudgetReport(budgetId));
+    }
 }
+

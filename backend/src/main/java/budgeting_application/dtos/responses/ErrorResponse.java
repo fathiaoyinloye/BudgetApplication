@@ -2,6 +2,7 @@ package budgeting_application.dtos.responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter
@@ -10,4 +11,5 @@ import lombok.Setter;
 public class ErrorResponse {
     private String status;
     private String message;
+//    private String timestamp;
 }

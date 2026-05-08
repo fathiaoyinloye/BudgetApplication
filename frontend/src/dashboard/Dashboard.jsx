@@ -4,108 +4,111 @@ import styles from "./Dashboard.module.css";
 import api from "../api/api";
 
 // ─────────────────────────────────────────────
-// BUDGET VIEW
+// BUDGET VIEW — only reached after budget exists
 // ─────────────────────────────────────────────
 const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, existingBudget }) => {
   const isEditing = !!existingBudget;
 
-  const [items, setItems]                   = useState([]);
-  const [budgetName, setBudgetName]         = useState(existingBudget?.name || "Untitled");
-  const [isEditingName, setIsEditingName]   = useState(false);
-  const [period, setPeriod]                 = useState(existingBudget?.period || "None");
-  const [name, setName]                     = useState("");
-  const [expected, setExpected]             = useState("");
-  const [type, setType]                     = useState("EXPENSE");
-  const [saving, setSaving]                 = useState(false);
-  const [loading, setLoading]               = useState(isEditing);
-  const [budgetID, setBudgetID]             = useState(existingBudget?.budgetID || null);
-  const [pageError, setPageError]           = useState("");
+  const [items, setItems]                     = useState([]);
+  const [budgetName, setBudgetName]           = useState(existingBudget?.name || "");
+  const [isEditingName, setIsEditingName]     = useState(false);
+  const [period, setPeriod]                   = useState(existingBudget?.period || "NONE");
+  const [name, setName]                       = useState("");
+  const [expected, setExpected]               = useState("");
+  const [type, setType]                       = useState("EXPENSE");
+  const [saving, setSaving]                   = useState(false);
+  const [loading, setLoading]                 = useState(isEditing);
+  const [budgetID]                            = useState(existingBudget?.budgetID);
+  const [pageError, setPageError]             = useState("");
+  const [addError, setAddError]               = useState("");
+  const [addingItem, setAddingItem]           = useState(false);
 
-  const [editingItemId, setEditingItemId]   = useState(null);
-  const [editFields, setEditFields]         = useState({});
-  const [editError, setEditError]           = useState("");
+  const [editingItemId, setEditingItemId]     = useState(null);
+  const [editFields, setEditFields]           = useState({});
+  const [editError, setEditError]             = useState("");
 
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [deleteError, setDeleteError]         = useState("");
 
-  const [addError, setAddError]             = useState("");
-
   useEffect(() => {
-    if (isEditing) {
-      const loadItems = async () => {
-        try {
-          const res = await api.get(`/${existingBudget.budgetID}/items`);
-          const loaded = (Array.isArray(res.data) ? res.data : []).map((i) => ({
-            localId:     i.id,
-            id:          i.id,
-            name:        i.name,
-            expected:    Number(i.budgetedAmount || 0),
-            actual:      Number(i.actualAmount   || 0),
-            type:        i.budgetItemType,
-            fromBackend: true,
-          }));
-          setItems(loaded);
-        } catch (err) {
-          setPageError("Failed to load budget items. Please go back and try again.");
-        } finally {
-          setLoading(false);
-        }
-      };
-      loadItems();
-    } else {
-      const createBudget = async () => {
-        try {
-          const res = await api.post("/budget");
-          setBudgetID(res.data.budgetID);
-        } catch (err) {
-          setPageError("Failed to create budget. Please go back and try again.");
-        }
-      };
-      createBudget();
-    }
+    if (!isEditing) return; // new budget — nothing to load, budgetID already exists
+    const loadItems = async () => {
+      try {
+        const res = await api.get(`/${existingBudget.budgetID}/items`);
+        const loaded = (Array.isArray(res.data) ? res.data : []).map((i) => ({
+          localId:     i.id,
+          id:          i.id,
+          name:        i.name,
+          expected:    Number(i.budgetedAmount || 0),
+          actual:      Number(i.actualAmount   || 0),
+          type:        i.budgetItemType,
+          fromBackend: true,
+        }));
+        setItems(loaded);
+      } catch (err) {
+        setPageError("Failed to load budget items. Please go back and try again.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadItems();
   }, []);
 
-  // ── Add item ──
-  const handleAdd = () => {
+  // ── Add item — posts immediately ──
+  const handleAdd = async () => {
     setAddError("");
-    if (!name.trim() || !expected) {
-      setAddError("Please fill in both item name and amount.");
-      return;
+    if (!name.trim() || !expected) { setAddError("Please fill in both item name and amount."); return; }
+    if (!/^[a-zA-Z\s]+$/.test(name)) { setAddError("Item name must contain letters only."); return; }
+
+    setAddingItem(true);
+    try {
+      const res = await api.post(`/addItems/${budgetID}`, [
+        {
+          name:           name.trim(),
+          budgetedAmount: Number(expected),
+          budgetItemType: type,
+          period:         period === "NONE" ? null : period,
+        },
+      ]);
+      const saved = Array.isArray(res.data) ? res.data[0] : res.data;
+      setItems((prev) => [
+        {
+          localId:     saved?.id || Date.now(),
+          id:          saved?.id || null,
+          name:        name.trim(),
+          expected:    Number(expected),
+          actual:      0,
+          type,
+          fromBackend: true,
+        },
+        ...prev,
+      ]);
+      setName("");
+      setExpected("");
+    } catch (err) {
+      setAddError(err.response?.data?.message || "Failed to add item. Please try again.");
+    } finally {
+      setAddingItem(false);
     }
-    if (!/^[a-zA-Z\s]+$/.test(name)) {
-      setAddError("Item name must contain letters only.");
-      return;
-    }
-    setItems([
-      { localId: Date.now(), id: null, name: name.trim(), expected: Number(expected), actual: 0, type, fromBackend: false },
-      ...items,
-    ]);
-    setName("");
-    setExpected("");
   };
 
-  // ── Start inline edit ──
+  // ── Inline edit ──
   const handleStartEdit = (item) => {
     setEditError("");
     setConfirmDeleteId(null);
     setEditingItemId(item.localId);
     setEditFields({
-      name:          item.name,
+      name:           item.name,
       budgetedAmount: item.expected,
       actualAmount:   item.actual,
       budgetItemType: item.type,
     });
   };
 
-  // ── Save edited item — only send what backend needs ──
   const handleSaveItemEdit = async (item) => {
     setEditError("");
-    if (!editFields.name.trim()) {
-      setEditError("Name cannot be empty.");
-      return;
-    }
-
-    if (item.fromBackend && item.id) {
+    if (!editFields.name.trim()) { setEditError("Name cannot be empty."); return; }
+    if (item.id) {
       try {
         await api.patch(`/${budgetID}/items/${item.id}`, {
           name:           editFields.name,
@@ -114,13 +117,10 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
           budgetItemType: editFields.budgetItemType,
         });
       } catch (err) {
-        setEditError(
-          err.response?.data?.message || "Failed to update item. Please try again."
-        );
+        setEditError(err.response?.data?.message || "Failed to update item. Please try again.");
         return;
       }
     }
-
     setItems((prev) =>
       prev.map((i) =>
         i.localId !== item.localId ? i : {
@@ -135,23 +135,20 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
     setEditingItemId(null);
   };
 
-  // ── Delete item — step 1: show confirm ──
+  // ── Delete item ──
   const handleAskDeleteItem = (item) => {
     setDeleteError("");
     setEditingItemId(null);
     setConfirmDeleteId(item.localId);
   };
 
-  // ── Delete item — step 2: confirmed ──
   const handleConfirmDeleteItem = async (item) => {
     setDeleteError("");
-    if (item.fromBackend && item.id) {
+    if (item.id) {
       try {
         await api.delete(`/${budgetID}/items/${item.id}`);
       } catch (err) {
-        setDeleteError(
-          err.response?.data?.message || "Failed to delete item. Please try again."
-        );
+        setDeleteError(err.response?.data?.message || "Failed to delete item. Please try again.");
         return;
       }
     }
@@ -159,34 +156,19 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
     setConfirmDeleteId(null);
   };
 
-  // ── Save budget + new items then go back ──
+  // ── Save & Back — only updates name + period ──
   const handleSaveAndBack = async () => {
     setPageError("");
-    if (!budgetID) { setPageError("Budget not ready yet, please wait."); return; }
     setSaving(true);
     try {
       await api.put(`/${budgetID}`, {
         name:   budgetName,
-        period: period === "None" ? null : period,
+        period: period === "NONE" ? null : period,
       });
-
-      const newItems = items.filter((i) => !i.fromBackend);
-      if (newItems.length > 0) {
-        const payload = newItems.map((i) => ({
-          name:           i.name,
-          budgetedAmount: i.expected,
-          budgetItemType: i.type,
-          period:         period === "None" ? null : period,
-        }));
-        await api.post(`/addItems/${budgetID}`, payload);
-      }
-
       if (onBudgetCreated) onBudgetCreated();
       onBack();
     } catch (err) {
-      setPageError(
-        err.response?.data?.message || "Failed to save budget. Please try again."
-      );
+      setPageError(err.response?.data?.message || "Failed to save budget. Please try again.");
     } finally {
       setSaving(false);
     }
@@ -234,13 +216,13 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
           <div className={styles.periodWrapper}>
             <label className={styles.periodLabel}>Period</label>
             <select className={styles.periodSelect} value={period} onChange={(e) => setPeriod(e.target.value)}>
-              <option value="None">None</option>
+              <option value="NONE">None</option>
               <option value="WEEKLY">Weekly</option>
               <option value="MONTHLY">Monthly</option>
               <option value="ANNUAL">Annual</option>
             </select>
           </div>
-          <button className={styles.primaryButton} onClick={handleSaveAndBack} disabled={saving || !budgetID} style={{ marginLeft: "8px" }}>
+          <button className={styles.primaryButton} onClick={handleSaveAndBack} disabled={saving} style={{ marginLeft: "8px" }}>
             {saving ? "Saving..." : "💾 Save & Back"}
           </button>
           <button className={styles.iconButton} onClick={onBack} style={{ marginLeft: "8px" }}>← Dashboard</button>
@@ -254,8 +236,6 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
             <button className={styles.errorClose} onClick={() => setPageError("")}>✕</button>
           </div>
         )}
-
-        {!budgetID && !isEditing && <p className={styles.loadingMsg}>⏳ Preparing budget...</p>}
 
         {items.length > 0 && (
           <div className={styles.balanceGrid}>
@@ -286,31 +266,14 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
               {editingItemId === item.localId ? (
                 <>
                   <div className={styles.editRow}>
-                    <input
-                      className={styles.editRowInput}
-                      value={editFields.name}
-                      onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))}
-                      placeholder="Name"
-                    />
-                    <input
-                      className={styles.editRowInput}
-                      type="number"
-                      value={editFields.budgetedAmount}
-                      onChange={(e) => setEditFields((f) => ({ ...f, budgetedAmount: e.target.value }))}
-                      placeholder="Expected"
-                    />
-                    <input
-                      className={styles.editRowInput}
-                      type="number"
-                      value={editFields.actualAmount}
-                      onChange={(e) => setEditFields((f) => ({ ...f, actualAmount: e.target.value }))}
-                      placeholder="Actual"
-                    />
-                    <select
-                      className={styles.editRowSelect}
-                      value={editFields.budgetItemType}
-                      onChange={(e) => setEditFields((f) => ({ ...f, budgetItemType: e.target.value }))}
-                    >
+                    <input className={styles.editRowInput} value={editFields.name}
+                      onChange={(e) => setEditFields((f) => ({ ...f, name: e.target.value }))} placeholder="Name" />
+                    <input className={styles.editRowInput} type="number" value={editFields.budgetedAmount}
+                      onChange={(e) => setEditFields((f) => ({ ...f, budgetedAmount: e.target.value }))} placeholder="Expected" />
+                    <input className={styles.editRowInput} type="number" value={editFields.actualAmount}
+                      onChange={(e) => setEditFields((f) => ({ ...f, actualAmount: e.target.value }))} placeholder="Actual" />
+                    <select className={styles.editRowSelect} value={editFields.budgetItemType}
+                      onChange={(e) => setEditFields((f) => ({ ...f, budgetItemType: e.target.value }))}>
                       <option value="EXPENSE">Expense</option>
                       <option value="INCOME">Income</option>
                     </select>
@@ -324,9 +287,7 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
               ) : confirmDeleteId === item.localId ? (
                 <>
                   <div className={styles.confirmRow}>
-                    <span className={styles.confirmText}>
-                      Delete <strong>{item.name}</strong>? This cannot be undone.
-                    </span>
+                    <span className={styles.confirmText}>Delete <strong>{item.name}</strong>? This cannot be undone.</span>
                     <div className={styles.confirmActions}>
                       <button className={styles.confirmYesBtn} onClick={() => handleConfirmDeleteItem(item)}>Yes, delete</button>
                       <button className={styles.confirmNoBtn} onClick={() => { setConfirmDeleteId(null); setDeleteError(""); }}>Cancel</button>
@@ -338,12 +299,8 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
                 <div className={styles.tableRow}>
                   <span className={styles.itemName}>{item.name}</span>
                   <span>₦{item.expected.toLocaleString()}</span>
-                  <span className={item.actual > item.expected ? styles.danger : ""}>
-                    ₦{item.actual.toLocaleString()}
-                  </span>
-                  <span className={`${styles.typeBadge} ${item.type === "INCOME" ? styles.income : styles.expense}`}>
-                    {item.type}
-                  </span>
+                  <span className={item.actual > item.expected ? styles.danger : ""}>₦{item.actual.toLocaleString()}</span>
+                  <span className={`${styles.typeBadge} ${item.type === "INCOME" ? styles.income : styles.expense}`}>{item.type}</span>
                   <div className={styles.rowActions}>
                     <button className={styles.editRowBtn} onClick={() => handleStartEdit(item)}>✏️</button>
                     <button className={styles.deleteRowBtn} onClick={() => handleAskDeleteItem(item)}>🗑</button>
@@ -355,23 +312,17 @@ const BudgetView = ({ isSidebarOpen, setIsSidebarOpen, onBack, onBudgetCreated, 
         </div>
 
         <div className={styles.addForm}>
-          <input
-            type="text"
-            placeholder="Item name"
-            value={name}
-            onChange={(e) => { if (/^[a-zA-Z\s]*$/.test(e.target.value)) { setName(e.target.value); setAddError(""); } }}
-          />
-          <input
-            type="number"
-            placeholder="Budgeted amount"
-            value={expected}
-            onChange={(e) => { setExpected(e.target.value); setAddError(""); }}
-          />
+          <input type="text" placeholder="Item name" value={name}
+            onChange={(e) => { if (/^[a-zA-Z\s]*$/.test(e.target.value)) { setName(e.target.value); setAddError(""); } }} />
+          <input type="number" placeholder="Budgeted amount" value={expected}
+            onChange={(e) => { setExpected(e.target.value); setAddError(""); }} />
           <select value={type} onChange={(e) => setType(e.target.value)}>
             <option value="EXPENSE">Expense</option>
             <option value="INCOME">Income</option>
           </select>
-          <button onClick={handleAdd}>Add Item</button>
+          <button onClick={handleAdd} disabled={addingItem}>
+            {addingItem ? "Adding..." : "Add Item"}
+          </button>
         </div>
         {addError && <div className={styles.inlineError} style={{ marginTop: "8px" }}>⚠️ {addError}</div>}
       </section>
@@ -390,27 +341,14 @@ const BudgetCard = ({ budget, onClick, onDelete }) => {
     day: "numeric", month: "short", year: "numeric",
   });
 
-  const handleDeleteClick = (e) => {
-    e.stopPropagation();
-    setConfirmDelete(true);
-    setDeleteError("");
-  };
-
+  const handleDeleteClick = (e) => { e.stopPropagation(); setConfirmDelete(true); setDeleteError(""); };
   const handleConfirm = async (e) => {
     e.stopPropagation();
     setDeleteError("");
-    try {
-      await onDelete(budget.budgetID);
-    } catch {
-      setDeleteError("Failed to delete. Please try again.");
-    }
+    try { await onDelete(budget.budgetID); }
+    catch { setDeleteError("Failed to delete. Please try again."); }
   };
-
-  const handleCancel = (e) => {
-    e.stopPropagation();
-    setConfirmDelete(false);
-    setDeleteError("");
-  };
+  const handleCancel = (e) => { e.stopPropagation(); setConfirmDelete(false); setDeleteError(""); };
 
   return (
     <div
@@ -418,26 +356,17 @@ const BudgetCard = ({ budget, onClick, onDelete }) => {
       onClick={!confirmDelete ? onClick : undefined}
     >
       <div className={styles.cardAccent} />
-
       {!confirmDelete && (
         <button className={styles.deleteCardBtn} onClick={handleDeleteClick} title="Delete budget">🗑</button>
       )}
-
       <h4 className={styles.budgetCardName}>{budget.name}</h4>
-
-      {/* ✅ Fixed: was budget.amount, now budget.budgetedAmount */}
       <p className={styles.budgetCardBalanceLabel}>Balance</p>
-      <p className={styles.budgetCardBalance}>
-        ₦{Number(budget.budgetedAmount || 0).toLocaleString("en-NG")}
-      </p>
-
+      <p className={styles.budgetCardBalance}>₦{Number(budget.budgetedAmount || 0).toLocaleString("en-NG")}</p>
       <p className={styles.budgetCardDate}>{formattedDate}</p>
 
       {confirmDelete && (
         <div className={styles.cardConfirm} onClick={(e) => e.stopPropagation()}>
-          <p className={styles.cardConfirmText}>
-            Delete this budget?<br /><span>This cannot be undone.</span>
-          </p>
+          <p className={styles.cardConfirmText}>Delete this budget?<br /><span>This cannot be undone.</span></p>
           {deleteError && <p className={styles.cardConfirmError}>⚠️ {deleteError}</p>}
           <div className={styles.cardConfirmActions}>
             <button className={styles.confirmYesBtn} onClick={handleConfirm}>Yes, delete</button>
@@ -459,16 +388,15 @@ const Dashboard = () => {
   const [user, setUser]                     = useState(null);
   const [selectedBudget, setSelectedBudget] = useState(null);
   const [fetchError, setFetchError]         = useState("");
-  const navigate = useNavigate();
 
-  const fetchUser = async () => {
-    try {
-      const res = await api.get("/user-details");
-      setUser(res.data);
-    } catch (err) {
-      console.error("User fetch error:", err.response?.status);
-    }
-  };
+  // ── Inline create budget form state ──
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newBudgetName, setNewBudgetName]   = useState("");
+  const [newBudgetPeriod, setNewBudgetPeriod] = useState("");
+  const [createError, setCreateError]       = useState("");
+  const [creating, setCreating]             = useState(false);
+
+  const navigate = useNavigate();
 
   const fetchBudgets = async () => {
     try {
@@ -479,23 +407,75 @@ const Dashboard = () => {
     }
   };
 
-  // Throws on error so BudgetCard can catch and show inline error
+  useEffect(() => {
+    const load = async () => {
+      try {
+        const [userRes, budgetsRes] = await Promise.all([
+          api.get("/user-details"),
+          api.get("/budgets"),
+        ]);
+        setUser(userRes.data);
+        setBudgets(Array.isArray(budgetsRes.data) ? budgetsRes.data : budgetsRes.data.data || []);
+      } catch (err) {
+        setFetchError("Failed to load data. Please refresh the page.");
+      }
+    };
+    load();
+  }, []);
+
+  // ── Create budget — called only when user explicitly submits form ──
+  const handleCreateBudget = async () => {
+    setCreateError("");
+
+    // Validate — both fields required, no defaults
+    if (!newBudgetName.trim()) {
+      setCreateError("Budget name is required.");
+      return;
+    }
+    if (!newBudgetPeriod) {
+      setCreateError("Please select a period.");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const res = await api.post("/budget", {
+        name:   newBudgetName.trim(),
+        period: newBudgetPeriod,
+      });
+      console.log("Budget created:", res.data.budgetID);
+
+      // Reset form
+      setNewBudgetName("");
+      setNewBudgetPeriod("");
+      setShowCreateForm(false);
+
+      // Go straight to BudgetView with the newly created budget
+      setSelectedBudget(res.data);
+      setView("budget");
+    } catch (err) {
+      setCreateError(err.response?.data?.message || "Failed to create budget. Please try again.");
+    } finally {
+      setCreating(false);
+    }
+  };
+
   const handleDeleteBudget = async (budgetID) => {
     await api.delete(`/budget/${budgetID}`);
     setBudgets((prev) => prev.filter((b) => b.budgetID !== budgetID));
   };
 
-  useEffect(() => {
-    fetchUser();
-    fetchBudgets();
-  }, []);
-
   const handleOpenBudget = (budget) => { setSelectedBudget(budget); setView("budget"); };
-  const handleCreateNew  = ()       => { setSelectedBudget(null);   setView("budget"); };
-  const handleBack       = ()       => { setSelectedBudget(null);   setView("dashboard"); };
+
+  const handleBack = () => {
+    setSelectedBudget(null);
+    setView("dashboard");
+    fetchBudgets(); // refresh list when returning
+  };
 
   return (
     <div className={styles.appContainer}>
+      {/* SIDEBAR */}
       <nav className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : styles.sidebarClosed}`}>
         <div className={styles.sidebarHeader}>
           <h2 className={styles.brandName}>BudgetWise</h2>
@@ -510,12 +490,14 @@ const Dashboard = () => {
           </button>
         </div>
         <div className={styles.sidebarFooter}>
-          <button className={`${styles.navItem} ${styles.logoutItem}`} onClick={() => { localStorage.removeItem("token"); navigate("/"); }}>
+          <button className={`${styles.navItem} ${styles.logoutItem}`}
+            onClick={() => { localStorage.removeItem("token"); navigate("/"); }}>
             <span className={styles.icon}>🚪</span> Logout
           </button>
         </div>
       </nav>
 
+      {/* MAIN */}
       <main className={styles.mainArea}>
         {view === "dashboard" ? (
           <>
@@ -526,8 +508,12 @@ const Dashboard = () => {
                 )}
                 <h1 className={styles.pageTitle}>Dashboard</h1>
               </div>
-              <button className={styles.primaryButton} onClick={handleCreateNew}>
-                <span className={styles.btnIcon}>➕</span> Create Budget
+              <button
+                className={styles.primaryButton}
+                onClick={() => { setShowCreateForm((v) => !v); setCreateError(""); }}
+              >
+                <span className={styles.btnIcon}>{showCreateForm ? "✕" : "➕"}</span>
+                {showCreateForm ? "Cancel" : "Create Budget"}
               </button>
             </header>
 
@@ -536,6 +522,40 @@ const Dashboard = () => {
                 <div className={styles.summaryCard}>
                   <h2 className={styles.greetingText}>Hello, {user.firstName} {user.lastName} 👋</h2>
                   <p className={styles.subGreeting}>Empowering your financial journey, one step at a time.</p>
+                </div>
+              )}
+
+              {/* ── INLINE CREATE BUDGET FORM — appears above budget list ── */}
+              {showCreateForm && (
+                <div className={styles.createBudgetBar}>
+                  <input
+                    className={styles.createBudgetInput}
+                    type="text"
+                    placeholder="Budget name"
+                    value={newBudgetName}
+                    onChange={(e) => { setNewBudgetName(e.target.value); setCreateError(""); }}
+                  />
+                  <select
+                    className={styles.createBudgetSelect}
+                    value={newBudgetPeriod}
+                    onChange={(e) => { setNewBudgetPeriod(e.target.value); setCreateError(""); }}
+                  >
+                    <option value="" disabled>Select period</option>
+                    <option value="NONE">None</option>
+                    <option value="WEEKLY">Weekly</option>
+                    <option value="MONTHLY">Monthly</option>
+                    <option value="ANNUAL">Annual</option>
+                  </select>
+                  <button
+                    className={styles.createBudgetBtn}
+                    onClick={handleCreateBudget}
+                    disabled={creating}
+                  >
+                    {creating ? "Creating..." : "Create →"}
+                  </button>
+                  {createError && (
+                    <span className={styles.createBudgetError}>⚠️ {createError}</span>
+                  )}
                 </div>
               )}
 

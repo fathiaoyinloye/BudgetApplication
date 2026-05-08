@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: budget-postgres
+    environment:
+      POSTGRES_USER: your_user
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: budget_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: budget-api
+    ports:
+      - "8080:8080"
+    environment:
+      # Use 'db' (the service name) instead of localhost
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/budget_db
+      SPRING_DATASOURCE_USERNAME: your_user
+      SPRING_DATASOURCE_PASSWORD: your_password
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
