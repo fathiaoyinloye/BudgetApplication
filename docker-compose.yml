@@ -3,9 +3,9 @@ services:
     image: postgres:15-alpine
     container_name: budget-postgres
     environment:
-      POSTGRES_USER: your_user
-      POSTGRES_PASSWORD: your_password
-      POSTGRES_DB: budget_db
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
       - "5432:5432"
     volumes:
@@ -15,15 +15,23 @@ services:
     build: ./backend
     container_name: budget-api
     ports:
-      - "8080:8080"
+      - "8080:8080"  # <--- ADD THIS LINE
     environment:
-      # Use 'db' (the service name) instead of localhost
-      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/budget_db
-      SPRING_DATASOURCE_USERNAME: your_user
-      SPRING_DATASOURCE_PASSWORD: your_password
-      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # These variables are passed into Spring Boot
+      SPRING_DATASOURCE_URL: jdbc:postgresql://${DOCKER_DB_HOST}:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      APPLICATION_SECURITY_JWT_SECRET_KEY: ${JWT_SECRET}
     depends_on:
       - db
+
+  frontend:
+    build: ./frontend
+    container_name: budget-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
 
 volumes:
   pgdata:
