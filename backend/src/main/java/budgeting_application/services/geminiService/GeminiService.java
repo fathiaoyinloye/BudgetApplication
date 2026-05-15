@@ -6,6 +6,7 @@ import budgeting_application.services.geminiService.geminiRequests.GeminiRequest
 import budgeting_application.services.geminiService.geminiRequests.Part;
 import budgeting_application.services.geminiService.geminiResponse.GeminiResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
 import org.springframework.beans.factory.annotation.Value;
@@ -15,6 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j // Adds a 'log' variable automatically
 public class GeminiService {
     @Value("${gemini.api.key}")
     private String apiKey;
@@ -25,7 +27,10 @@ public class GeminiService {
     private final RestClient restClient;
 
 
+
     public String getBudgetInsight(BudgetReportResponse response) {
+        log.info("Generating budget insight for budget: {}", response.getBudgetName());
+        long startTime = System.currentTimeMillis();
         String url = endpoint + "?key=" + apiKey;
         //models=models/gemini-2.0-flash
         String prompt = generatePrompt(response);
@@ -44,7 +49,11 @@ public class GeminiService {
                     .retrieve()
                     .body(GeminiResponse.class);
 
+
+            log.debug("Successfully received Gemini response in {}ms", (System.currentTimeMillis() - startTime));
+
             assert geminiResponse != null;
+
             if (geminiResponse.candidates() != null && !geminiResponse.candidates().isEmpty()) {
                 return geminiResponse.candidates().getFirst() // Get first candidate
                         .content()
@@ -53,8 +62,8 @@ public class GeminiService {
             }
 
         }catch(Exception e){
-            System.err.println("Gemini Insight failed: " + e.getMessage());
-
+            log.error("Failed to fetch Gemini insight for budget {}. Error: {}",
+                    response.getBudgetName(), e.getMessage());
             return "Our AI Advisor is currently taking a break, but your calculated budget report is ready above! Please check back later for deep insights.";
         }
 
