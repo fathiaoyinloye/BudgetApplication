@@ -9,25 +9,20 @@ import java.util.List;
 public class HealthyInsightStrategy implements InsightStrategy {
 
     private final List<String> insights = List.of(
-            "You are close to exceeding your budget.",
-            "You have exceeded your budget.",
-            "Your remaining balance is critically low.",
-            "Your spending rate is unsustainable.",
-            "At your current pace, you are likely to overspend.",
-            "Immediate spending adjustments are recommended.",
-            "Your expenses are significantly higher than planned.",
-            "Your budget has entered a high-risk state.",
-            "You are spending beyond your planned limit.",
-            "Your current financial pattern may lead to overspending.",
-            "Your available balance has nearly been exhausted.",
-            "You should reduce non-essential spending immediately.",
-            "Your projected spending exceeds your planned budget.",
-            "Your financial stability for this period is at risk."
-
+            "You are within a safe spending range.",
+            "Your spending is well managed so far.",
+            "You still have a comfortable amount remaining.",
+            "Your current spending pattern is sustainable. ",
+            "You are on track to stay within your budget.",
+            "Your expenses are currently under control.",
+            "You have maintained a healthy budget balance.",
+            "Your spending pace is moderate.",
+            "You are managing your finances responsibly.",
+            "Your remaining balance is sufficient for the rest of this period."
             );
     @Override
     public boolean appliesTo(double percentage) {
-        return percentage > 0 && percentage < 50;
+        return percentage > 0 && percentage <=60;
     }
 
     @Override

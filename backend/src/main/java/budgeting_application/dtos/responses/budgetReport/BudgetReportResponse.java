@@ -15,7 +15,9 @@ public class BudgetReportResponse {
     private BigDecimal budgetedAmount;
     private BigDecimal actualAmount;
     private BigDecimal remainingAmount;
+    private double budgetPerformancePercentage;
     private double percentageUsed;
     private String status;
     private List<String> insights;
+    private String aiResponse;
 }

@@ -11,6 +11,8 @@ import budgeting_application.dtos.responses.BudgetResponse;
 import budgeting_application.dtos.responses.budgetReport.BudgetReportResponse;
 import budgeting_application.exceptions.BudgetDoesNotExistException;
 import budgeting_application.indexingData.BudgetTotals;
+import budgeting_application.indexingData.ExpensesTotal;
+import budgeting_application.services.geminiService.GeminiService;
 import budgeting_application.services.interfaces.BudgetService;
 import budgeting_application.services.security.SecurityService;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,7 @@ public class BudgetServiceImpl implements BudgetService {
 
     private final BudgetRepository budgetRepository;
     private final BudgetItemRepository budgetItemRepository;
+    private final GeminiService geminiService;
     private final UserRepository userRepository;
     private final ModelMapper modelMapper;
     private final SecurityService securityService;
@@ -98,20 +101,35 @@ public class BudgetServiceImpl implements BudgetService {
     public BudgetReportResponse getBudgetReport(UUID budgetId) {
         Budget budget = findBudget(budgetId, securityService.getAuthenticatedUser());
         BudgetTotals totals = budgetItemRepository.getBudgetTotals(budgetId);
-        double percentageUsed = totals.getActualTotal()
-                .divide(totals.getBudgetedTotal(), 2, RoundingMode.HALF_UP)
-                .multiply(new BigDecimal(100))
-                .doubleValue();
+        ExpensesTotal expensesTotal = budgetItemRepository.findExpenseTotals(budgetId);
+        double performancePercentage =  getPerformancePercentage(totals);
+        double percentageUsed = getPercentageUsed(expensesTotal);
         BudgetReportResponse response = new BudgetReportResponse();
         response.setBudgetedAmount(totals.getBudgetedTotal());
         response.setActualAmount(totals.getActualTotal());
         response.setBudgetId(budgetId);
         response.setBudgetName(budget.getName());
         response.setRemainingAmount(totals.getBudgetedTotal().subtract(totals.getActualTotal()));
+        response.setBudgetPerformancePercentage(performancePercentage);
         response.setPercentageUsed(percentageUsed);
         response.setStatus(getStatus(percentageUsed));
         response.setInsights(insightService.generateInsights(percentageUsed));
+        response.setAiResponse(geminiService.getBudgetInsight(response));
         return response;
+    }
+
+    private  double getPerformancePercentage(BudgetTotals totals) {
+        return totals.getActualTotal()
+                .divide(totals.getBudgetedTotal(), 2, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal(100))
+                .doubleValue();
+    }
+
+    private  double getPercentageUsed(ExpensesTotal totals) {
+        return totals.getActualExpenses()
+                .divide(totals.getBudgetedExpenses(), 2, RoundingMode.HALF_UP)
+                .multiply(new BigDecimal(100))
+                .doubleValue();
     }
 
     private  Budget findBudget(UUID id, User user){
@@ -120,7 +138,10 @@ public class BudgetServiceImpl implements BudgetService {
     }
 
     private String getStatus(double percentageUsed){
-        if(percentageUsed < 50)
+        if(percentageUsed < 0)
+            return "Unhealthy";
+
+        if(percentageUsed < 60)
             return "Healthy";
         else if(percentageUsed < 80)
             return "Warning";

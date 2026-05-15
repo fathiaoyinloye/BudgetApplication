@@ -27,7 +27,7 @@ public class CriticalInsight implements InsightStrategy {
 
     @Override
     public boolean appliesTo(double percentage) {
-        return percentage >= 50 && percentage < 80;
+        return percentage >= 60 && percentage < 80;
     }
 
     @Override

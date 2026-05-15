@@ -1,6 +1,7 @@
 package budgeting_application.exceptions;
 
 import budgeting_application.dtos.responses.ErrorResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -10,19 +11,34 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestClientResponseException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.time.LocalDateTime;
 
 @RestControllerAdvice
+@Slf4j
 public class GlobalExceptionHandler {
 
     @ExceptionHandler(RestClientException.class)
     public ResponseEntity<ErrorResponse> handleRestClientException(RestClientException ex) {
+        // Log the high-level error message
+        log.error("External API call failed: {}", ex.getMessage());
+
+        // If Google returned a specific error (400, 404, 500), log the body
+        if (ex instanceof RestClientResponseException restEx) {
+            String errorBody = restEx.getResponseBodyAsString();
+            log.error("Google API Error Response Body: {}", errorBody);
+            log.error("Status Code Received: {}", restEx.getStatusCode());
+        }
+
+        // Log the stack trace at the ERROR level
+        log.error("Full stack trace: ", ex);
+
         return ResponseEntity
-                .status(HttpStatus.BAD_GATEWAY)  // 502
-                .body(new ErrorResponse("error", "External API unavailable"));
+                .status(HttpStatus.BAD_GATEWAY)
+                .body(new ErrorResponse("error", "AI Service integration failed. Check application logs."));
     }
     @ExceptionHandler(BudgetException.class)
     public ResponseEntity<ErrorResponse> handleGenderApiException(BudgetException ex) {
@@ -75,6 +91,6 @@ public class GlobalExceptionHandler {
     }
 
 
-
+//    WebClientResponseException
 
 }
