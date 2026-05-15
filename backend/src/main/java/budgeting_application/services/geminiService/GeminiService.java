@@ -63,6 +63,7 @@ public class GeminiService {
 
         }catch(Exception e){
             log.error("Failed to fetch Gemini insight for budget {}. Error: {}",
+
                     response.getBudgetName(), e.getMessage());
             return "Our AI Advisor is currently taking a break, but your calculated budget report is ready above! Please check back later for deep insights.";
         }
