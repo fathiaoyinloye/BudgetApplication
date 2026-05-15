@@ -1,5 +1,5 @@
 services:
-  db:
+  budget_app_db:
     image: postgres:15-alpine
     container_name: budget-postgres
     environment:
@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: ${DB_USER:-postgres}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
     ports:
-      - "5432:5432"
+      - "5433:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
@@ -35,7 +35,7 @@ services:
       # Senior Tip: Force console colors in Docker logs
       SPRING_OUTPUT_ANSI_ENABLED: ALWAYS
     depends_on:
-      db:
+      budget_app_db:
         condition: service_healthy
 
   frontend:
