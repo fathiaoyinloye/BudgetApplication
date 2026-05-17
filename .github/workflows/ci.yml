@@ -61,6 +61,7 @@ jobs:
           context: ./frontend
           file: ./frontend/Dockerfile
           push: true
+          no-cache: true
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/budget-frontend:latest
             ${{ secrets.DOCKERHUB_USERNAME }}/budget-frontend:v1.0.${{ github.run_number }}-${{ steps.vars.outputs.sha_short }}
