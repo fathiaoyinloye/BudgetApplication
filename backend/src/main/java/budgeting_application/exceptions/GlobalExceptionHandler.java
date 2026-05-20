@@ -77,13 +77,16 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> handleValidationExceptions(MethodArgumentNotValidException ex) {
+        String message = ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage();
+        log.error("Validation error: {}", message);
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(ex.getBindingResult().getFieldErrors().get(0).getDefaultMessage());
+                .body(message);
     }
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
+        log.error("An unexpected error occurred: {}", ex.getMessage());
         ex.printStackTrace();
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)

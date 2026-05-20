@@ -16,6 +16,7 @@ import budgeting_application.mappers.Mappers;
 import budgeting_application.services.interfaces.UserService;
 import budgeting_application.services.security.jwtService.JWTService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +27,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -61,8 +63,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserDetailsResponse getUserDetails(){
         String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        log.info("Fetching user details for username: {}", username);
+
         User user =  userRepository.findByUsername(username)
-                .orElseThrow(() -> new UserDoesNotExistException("User not found"));
+                .orElseThrow(() -> {
+            log.warn("User details requested but user not found for username: {}",
+                    username);
+
+            return new UserDoesNotExistException("User not found");
+        });
+
+        log.info("User details fetched successfully for userId: {}",
+                user.getId());
+
 
         return modelMapper.map(user, UserDetailsResponse.class);
     }
