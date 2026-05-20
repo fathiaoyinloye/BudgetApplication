@@ -52,8 +52,10 @@ public class SecurityConfig {
         // Add both the Vite local port AND the Docker port (http://localhost)
         configuration.setAllowedOrigins(java.util.List.of("http://localhost:5173",
                 "http://localhost",
-                "http://16.170.214.226"
-                ));
+                "http://16.170.214.226",
+                "https://your-app.vercel.app"
+
+        ));
 
         configuration.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
 
