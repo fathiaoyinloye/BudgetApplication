@@ -33,7 +33,7 @@ const Signup = () => {
   setLoading(true);
 
   try {
-    const response = await api.post("/auth/new_user", formData);
+    const response = await api.post("auth/new_user", formData);
 
     console.log("SIGNUP RESPONSE:", response.data); // 👈 check this
 
