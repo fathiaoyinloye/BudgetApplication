@@ -17,7 +17,7 @@ public class CorsConfig {
                         .allowedOrigins("http://localhost:5173",
                                 "http://localhost",
                                 "http://16.170.214.226",
-                                "https://your-app.vercel.app"
+                                "https://budget-application-one.vercel.app"
 
                         )
                         .allowedMethods("GET", "POST", "DELETE", "PUT", "OPTIONS", "PATCH")
