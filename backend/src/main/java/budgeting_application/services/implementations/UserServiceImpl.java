@@ -39,7 +39,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public SignUpResponse signUp(SignUpRequest signUpRequest){
+        log.info("Received sign up request from: {}", signUpRequest.getUsername());
         validateNewUsername(signUpRequest.getUsername());
+        validateMail(signUpRequest.getEmail());
         User user = Mappers.mapSignUpRequest(signUpRequest, applicationConfig);
         userRepository.save(user);
         return Mappers.mapSignUpResponse(user, jwtService);
@@ -94,8 +96,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateNewUsername(String username){
-        if(userRepository.findByUsername(username).isPresent())
-                throw new UserDoesNotExistException("Username not available");
+        if(userRepository.findByUsername(username).isPresent()){
+            log.warn("Username already exists: {}", username) ;
+            throw new UserDoesNotExistException("Username not available");
+        }
+
+    }
+
+    private void validateMail(String email) {
+        if (userRepository.findByEmail(email).isPresent()) {
+            log.warn("Email already exists: {}", email);
+            throw new UserDoesNotExistException("Email not available");
+        }
 
     }
 }

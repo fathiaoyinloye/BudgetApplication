@@ -43,6 +43,8 @@ public class GlobalExceptionHandler {
     }
     @ExceptionHandler(BudgetException.class)
     public ResponseEntity<ErrorResponse> handleGenderApiException(BudgetException ex) {
+        log.error("Internal server: {}", ex.getMessage());
+
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
                 .body(new ErrorResponse("error", ex.getMessage()));
@@ -62,10 +64,10 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<ErrorResponse> handleDuplicateMail(MissingServletRequestParameterException ex) {
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(MissingServletRequestParameterException ex) {
         return ResponseEntity
                 .status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("error", "Mail already existed"));
+                .body(new ErrorResponse("error", "Invalid Input"));
     }
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ErrorResponse> handleMessageNotReadable(HttpMessageNotReadableException ex) {

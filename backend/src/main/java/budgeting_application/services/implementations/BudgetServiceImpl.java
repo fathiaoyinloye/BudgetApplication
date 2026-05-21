@@ -100,6 +100,7 @@ public class BudgetServiceImpl implements BudgetService {
     @Override
     public BudgetReportResponse getBudgetReport(UUID budgetId) {
         Budget budget = findBudget(budgetId, securityService.getAuthenticatedUser());
+        validateBudgetItem(budget);
         BudgetTotals totals = budgetItemRepository.getBudgetTotals(budgetId);
         ExpensesTotal expensesTotal = budgetItemRepository.findExpenseTotals(budgetId);
         double performancePercentage =  getPerformancePercentage(totals);
@@ -147,6 +148,14 @@ public class BudgetServiceImpl implements BudgetService {
             return "Warning";
         else
             return "Critical";
+
+    }
+
+
+    private void validateBudgetItem(Budget budget){
+        if (budgetItemRepository.findAllByBudget(budget).isEmpty()) {
+            throw new BudgetDoesNotExistException("No Budget Items Found. Please add some budget items to continue.");
+        }
 
     }
 
